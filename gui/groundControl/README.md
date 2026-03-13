@@ -11,3 +11,6 @@ lab test.  sends commands with simple 0-15 numbering scheme over serial
 
 ##start_tcp.py
 lab test.  sends commands with simple 0-15 numbering scheme over tcp to server
+
+![alt text](https://github.com/abegyoung/ONR/blob/main/gui/images/main.png?raw=true)
+
