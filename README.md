@@ -6,9 +6,9 @@ The 60Mcuft balloon flight from Ft Sumner to 160,000ft tested the communication 
 
 Communication was UPLINK through CSBF CIP package 16-bit commands, and DOWNLINK by 9600 baud serial.
 
+----------------
 
 ## Repo includes:
-----------------
 Flight servers for transmitter, IMU, CIP communications
 
 ARM Cortex-M4 firmware code for GMSK radio (using a CC1100 1-GHz transceiver)
