@@ -1,0 +1,99 @@
+// $LastChangedDate: 2016-08-26 00:43:49 +0000 (Fri, 26 Aug 2016) $
+// $Rev: 166 $      $Author: obs $
+
+/* A place to put the udpMonitor() thread which gets the current
+*  pointing from the MAX3 udp stream.
+*/  
+
+#include <fcntl.h>
+#include <time.h>
+#include <pthread.h>
+#include <sys/sysctl.h> 
+#include <sys/ioctl.h>
+#include "txServer.h"
+#include "streamer.h"
+#include "pointing.h"
+#include <math.h>
+
+void *pointing(void *arg) {
+
+  int ant;
+  int max, i=0, j;
+  int msb=0;
+  int lsb=0;
+  int addr[3]={0x58, 0x5A, 0x5C};
+  int DAC_tfa[3][1024];
+  int DAC_bfo[3][1024];
+  int DAC_tfi[3][1024];
+  //float Gbits  = 3.3/4096.;            //DAC bits to voltage
+  //float Gdc    = 13.53/3.3;            //op amp DC gain
+  //float Gphase = 430./13.;             //Hittite phase shifter gain
+  //float offset = 30.;                  //lowest phase shift (degrees)
+  //float m = Gdc * Gphase * Gbits;      //Slope of conversion
+
+  FILE *fp_tfa = fopen("/home/ubuntu/ONR/txServer/lighthouse_tfa.txt", "r");
+  FILE *fp_bfo = fopen("/home/ubuntu/ONR/txServer/lighthouse_bfo.txt", "r");
+  FILE *fp_tfi = fopen("/home/ubuntu/ONR/txServer/lighthouse_tfi.txt", "r");
+
+  i=0;
+  while((fscanf(fp_tfa, "%d %d %d\n", &DAC_tfa[0][i], &DAC_tfa[1][i], &DAC_tfa[2][i]) != EOF) || (i>1023))
+    {
+      i++;
+    }
+  max=i;
+  fclose(fp_tfa);
+
+  i=0;
+  while((fscanf(fp_bfo, "%d %d %d\n", &DAC_bfo[0][i], &DAC_bfo[1][i], &DAC_bfo[2][i]) != EOF) || (i>1023))
+    {
+      i++;
+    }
+  max=i;
+  fclose(fp_bfo);
+
+  i=0;
+  while((fscanf(fp_tfi, "%d %d %d\n", &DAC_tfi[0][i], &DAC_tfi[1][i], &DAC_tfi[2][i]) != EOF) || (i>1023))
+    {
+      i++;
+    }
+  max=i;
+  fclose(fp_tfi);
+
+  for(;;){
+
+    POINTING_t result;
+    // check antenna switch.  Only switch antenna after done with LUT
+    ant = (((server.powerstate>>4)&1)<<1) + ((server.powerstate>>5)&1) + 1;
+
+    if(server.pointmode){
+      result = vincenty(server.pointmode);
+      sleep(1);
+      //a = (int) ((offset+result.az)/m);
+    }
+
+    else{  // mode = 0, assume lighthouse
+      // loop over the values in the file, line by line
+      for(i=0; i<max; i++){
+        // loop over the DACs and send
+        for(j=0; j<3; j++){
+          if(ant==1){
+            msb = DAC_tfa[j][i]>>8;
+            lsb = DAC_tfa[j][i] & 0xFF;
+          }
+          if(ant==2){
+            msb = DAC_bfo[j][i]>>8;
+            lsb = DAC_bfo[j][i] & 0xFF;
+          }
+          if(ant==4){
+            msb = DAC_tfi[j][i]>>8;
+            lsb = DAC_tfi[j][i] & 0xFF;
+          }
+          i2c_write_word(DAC_ADDR, addr[j], msb+(lsb<<8));
+          usleep(100); //short sleep before setting next DAC
+        }
+        usleep(10000);
+      }
+    }
+  }
+}
+

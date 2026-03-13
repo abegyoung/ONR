@@ -1,0 +1,6 @@
+ln -sf TFI_tables/steeringresults_20sep_TFI_alt05_interp1deg_DAConly.txt	TFI_alt05_1deg.txt
+ln -sf TFI_tables/steeringresults_20sep_TFI_alt10_interp1deg_DAConly.txt	TFI_alt10_1deg.txt
+ln -sf TFI_tables/steeringresults_20sep_TFI_alt15_interp1deg_DAConly.txt	TFI_alt15_1deg.txt
+ln -sf TFI_tables/steeringresults_20sep_TFI_alt20_interp1deg_DAConly.txt	TFI_alt20_1deg.txt
+ln -sf TFI_tables/steeringresults_20sep_TFI_alt25_interp1deg_DAConly.txt	TFI_alt25_1deg.txt
+ln -sf TFI_tables/steeringresults_20sep_TFI_alt30_interp1deg_DAConly.txt	TFI_alt30_1deg.txt

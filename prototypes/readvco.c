@@ -1,0 +1,176 @@
+#include <stdint.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/types.h>
+#include <linux/spi/spidev.h>
+
+char buf[10];
+char buf2[10];
+int com_serial;
+int failcount;
+ 
+struct spi_ioc_transfer xfer[2];
+
+//////////
+// Init SPIdev
+//////////
+int spi_init(char filename[40])
+    {
+        int file;
+    __u8    mode, lsb, bits;
+    __u32 speed=3200000;
+ 
+        if ((file = open(filename,O_RDWR)) < 0)
+        {
+            printf("Failed to open the bus.");
+            /* ERROR HANDLING; you can check errno to see what went wrong */
+        com_serial=0;
+            exit(1);
+            }
+ 
+        ///////////////
+        // Verifications
+        ///////////////
+        //possible modes: mode |= SPI_LOOP; mode |= SPI_CPHA; mode |= SPI_CPOL; mode |= SPI_LSB_FIRST; mode |= SPI_CS_HIGH; mode |= SPI_3WIRE; mode |= SPI_NO_CS; mode |= SPI_READY;
+        //multiple possibilities using |
+        /*
+            if (ioctl(file, SPI_IOC_WR_MODE, &mode)<0)   {
+                perror("can't set spi mode");
+                return;
+                }
+        */
+ 
+            if (ioctl(file, SPI_IOC_RD_MODE, &mode) < 0)
+                {
+                perror("SPI rd_mode");
+                return;
+                }
+            if (ioctl(file, SPI_IOC_RD_LSB_FIRST, &lsb) < 0)
+                {
+                perror("SPI rd_lsb_fist");
+                return;
+                }
+       /* 
+            if (ioctl(file, SPI_IOC_WR_BITS_PER_WORD, (__u8[1]){8})<0)   
+                {
+                perror("can't set bits per word");
+                return;
+                }
+       */ 
+            if (ioctl(file, SPI_IOC_RD_BITS_PER_WORD, &bits) < 0) 
+                {
+                perror("SPI bits_per_word");
+                return;
+                }
+       
+       /* 
+            if (ioctl(file, SPI_IOC_WR_MAX_SPEED_HZ, &speed)<0)  
+                {
+                perror("can't set max speed hz");
+                return;
+                }
+       */ 
+            if (ioctl(file, SPI_IOC_RD_MAX_SPEED_HZ, &speed) < 0) 
+                {
+                perror("SPI max_speed_hz");
+                return;
+                }
+     
+    printf("%s: spi mode %d, %d bits %sper word, %d Hz max\n",filename, mode, bits, lsb ? "(lsb first) " : "", speed);
+ 
+    //xfer[0].tx_buf = (unsigned long)buf;
+    xfer[0].len = 3; /* Length of  command to write*/
+    xfer[0].cs_change = 0; /* Keep CS activated */
+    xfer[0].delay_usecs = 0, //delay in us
+    xfer[0].speed_hz = 2500000, //speed
+    xfer[0].bits_per_word = 8, // bites per word 8
+ 
+    //xfer[1].rx_buf = (unsigned long) buf2;
+    xfer[1].len = 4; /* Length of Data to read */
+    xfer[1].cs_change = 0; /* Keep CS activated */
+    xfer[0].delay_usecs = 0;
+    xfer[0].speed_hz = 2500000;
+    xfer[0].bits_per_word = 8;
+ 
+    return file;
+    }
+
+//////////
+// Read n bytes from the address addr
+//////////
+ 
+char * spi_read(int addr,int nbytes,int file)
+    {
+    int status;
+ 
+    memset(buf, 0, sizeof buf);
+    memset(buf2, 0, sizeof buf2);
+    buf[0] = addr;
+    xfer[0].tx_buf = (unsigned long)buf;
+    xfer[0].len = 1; /* Length of  command to write*/
+    xfer[1].rx_buf = (unsigned long) buf2;
+    xfer[1].len = nbytes; /* Length of Data to read */
+    status = ioctl(file, SPI_IOC_MESSAGE(2), xfer);
+    if (status < 0)
+        {
+        perror("SPI_IOC_MESSAGE");
+        return;
+        }
+ 
+    com_serial=1;
+    failcount=0;
+    return buf2;
+    }
+
+//////////
+// Write n bytes into the address addr
+//////////
+void spi_write(int addr,int nbytes,char value[10],int file)
+    {
+    unsigned char   buf[32];
+    int status;
+ 
+    memset(buf, 0, sizeof buf);
+    buf[0] = addr;
+    if (nbytes>=1) buf[1] = value[0];
+    if (nbytes>=2) buf[2] = value[1];
+    if (nbytes>=3) buf[3] = value[2];
+    if (nbytes>=4) buf[4] = value[3];
+    xfer[0].tx_buf = (unsigned long)buf;
+    xfer[0].len = nbytes+1; /* Length of  command to write*/
+    status = ioctl(file, SPI_IOC_MESSAGE(1), xfer);
+    if (status < 0)
+        {
+        perror("SPI_IOC_MESSAGE");
+        return;
+        }
+ 
+    com_serial=1;
+    failcount=0;
+    }
+
+void main(){
+
+  int i,j, addr; 
+  char *buffer;
+  char buf[10];
+  int file = spi_init("/dev/spidev0.0");
+
+  buf[0] = 0x00;
+
+  for(i=0; i<16; i++){
+    addr   = (i<<1) ^ 0x80;
+    buffer = (char *) spi_read(addr, 3, file);
+    printf("0x%02X\t0x", addr);
+    for(j=0;j<3;j++)
+      printf("%02X", buffer[j]);
+    printf("\n");
+  }
+
+  close(file);
+
+}

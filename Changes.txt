@@ -1,0 +1,9 @@
+9/29/2017
+Many changes. Some below.
+Craig's addition of housekeeping thread
+Craig's update of pointing thread to read phase space lookup table
+fixed bug in adc.c that didn't do read/modify/write to MUX_ADDR
+cipComm updated to reflect new txServer Commands.c
+This file is new.
+
+

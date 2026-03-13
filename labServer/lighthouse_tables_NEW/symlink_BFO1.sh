@@ -1,0 +1,5 @@
+ln -sf BFO_tables/steeringresults_21sep_BFO_alt00_interp1deg_DAConly.txt	BFO_alt00_1deg.txt
+ln -sf BFO_tables/steeringresults_21sep_BFO_alt20_interp1deg_DAConly.txt	BFO_alt20_1deg.txt
+ln -sf BFO_tables/steeringresults_21sep_BFO_alt40_interp1deg_DAConly.txt	BFO_alt40_1deg.txt
+ln -sf BFO_tables/steeringresults_21sep_BFO_alt60_interp1deg_DAConly.txt	BFO_alt60_1deg.txt
+ln -sf BFO_tables/steeringresults_21sep_BFO_alt80_interp1deg_DAConly.txt	BFO_alt80_1deg.txt
