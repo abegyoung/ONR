@@ -48,35 +48,42 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
 	def __init__(self, parent=None):
 		QtGui.QWidget.__init__(self, parent)
 		self.setupUi(self)
-                self.startBtn.clicked.connect(self.startBtn_clicked)
-                self.stopBtn.clicked.connect(self.stopBtn_clicked)
-                self.nextModeBtn.clicked.connect(self.nextModeBtn_clicked)
-                self.powerBtn_1.clicked.connect(self.powerBtn_1_clicked)
-                self.powerBtn_2.clicked.connect(self.powerBtn_2_clicked)
-                self.powerBtn_3.clicked.connect(self.powerBtn_3_clicked)
-                self.powerBtn_4.clicked.connect(self.powerBtn_4_clicked)
-                self.powerBtn_5.clicked.connect(self.powerBtn_5_clicked)
-                self.powerBtn_6.clicked.connect(self.powerBtn_6_clicked)
-                self.powerBtn_7.clicked.connect(self.powerBtn_7_clicked)
-                self.powerBtn_8.clicked.connect(self.powerBtn_8_clicked)
-                self.tuneUpBtn.clicked.connect(self.tuneUpBtn_clicked)
-                self.tuneDnBtn.clicked.connect(self.tuneDnBtn_clicked)
+		self.startBtn.clicked.connect(self.startBtn_clicked)
+		self.stopBtn.clicked.connect(self.stopBtn_clicked)
+		self.powerBtn_1.clicked.connect(self.powerBtn_1_clicked)# setpower vco55
+		self.powerBtn_2.clicked.connect(self.powerBtn_2_clicked)# setpower vco15
+		self.powerBtn_3.clicked.connect(self.powerBtn_3_clicked)# setpower pa1
+		self.powerBtn_4.clicked.connect(self.powerBtn_4_clicked)# setpower pa2 
+		self.powerBtn_5.clicked.connect(self.powerBtn_5_clicked)# setpower msb
+		self.powerBtn_6.clicked.connect(self.powerBtn_6_clicked)# setpower lsb
+		self.powerBtn_7.clicked.connect(self.powerBtn_7_clicked)# setpower usevco
+		self.powerBtn_8.clicked.connect(self.powerBtn_8_clicked)# setpower pa3
+
+		self.cpuReboot.clicked.connect(self.cpuRebootBtn_clicked)#reboot cpu
+		self.cipCommRestart.clicked.connect(self.cipCommRestartBtn_clicked)# restart cip server
+		self.txServerRestart.clicked.connect(self.txServerRestartBtn_clicked)# restart tx serer
+		self.antennaMode.clicked.connect(self.antennaModeBtn_clicked)# Reserved
+
+		self.radioBtn.clicked.connect(self.radioBtn_clicked)# start CC1100 transmitting
+		self.tuneUpBtn.clicked.connect(self.tuneUpBtn_clicked)# setfreq dwn
+		self.tuneDnBtn.clicked.connect(self.tuneDnBtn_clicked)# setfreq up
+		self.nextModeBtn.clicked.connect(self.nextModeBtn_clicked)# pointing mode (lighthouse, GS1, GS2)
 
 		self.timer = QtCore.QTimer(self)
 		self.timer.setInterval(10)
 		self.timer.timeout.connect(self.blink)
-                #self.timer.timeout.connect(self.update)
+		#self.timer.timeout.connect(self.update)
 
-                self.hourHand = QtGui.QPolygon([
-                QtCore.QPoint(7, 8),
-                QtCore.QPoint(-7, 8),
-                QtCore.QPoint(0, -40)
-                ])
-                self.minuteHand = QtGui.QPolygon([
-                QtCore.QPoint(7, 8),
-                QtCore.QPoint(-7, 8),
-                QtCore.QPoint(0, -70)
-                ])
+		self.hourHand = QtGui.QPolygon([
+		QtCore.QPoint(7, 8),
+		QtCore.QPoint(-7, 8),
+		QtCore.QPoint(0, -40)
+		])
+		self.minuteHand = QtGui.QPolygon([
+		QtCore.QPoint(7, 8),
+		QtCore.QPoint(-7, 8),
+		QtCore.QPoint(0, -70)
+		])
 
 	def start(self):
 	  self.timer.start()
@@ -151,58 +158,89 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
 
         def powerBtn_1_clicked(self):
           global UpSer
-          cmd = "0"
+          cmd = "0\r"
           UpSer.write(cmd)
 
         def powerBtn_2_clicked(self):
           global UpSer
-          cmd = "1"
+          cmd = "1\r"
           UpSer.write(cmd)
 
         def powerBtn_3_clicked(self):
           global UpSer
-          cmd = "2"
+          cmd = "2\r"
           UpSer.write(cmd)
 
         def powerBtn_4_clicked(self):
           global UpSer
-          cmd = "3"
+          cmd = "3\r"
           UpSer.write(cmd)
 
         def powerBtn_5_clicked(self):
           global UpSer
-          cmd = "4"
+          cmd = "4\r"
           UpSer.write(cmd)
 
         def powerBtn_6_clicked(self):
           global UpSer
-          cmd = "5"
+          cmd = "5\r"
           UpSer.write(cmd)
 
         def powerBtn_7_clicked(self):
           global UpSer
-          cmd = "6"
+          cmd = "6\r"
           UpSer.write(cmd)
 
         def powerBtn_8_clicked(self):
           global UpSer
-          cmd = "7"
+          cmd = "7\r"
           UpSer.write(cmd)
 
-        def nextModeBtn_clicked(self):
+
+
+
+	def cpuRebootBtn_clicked(self):
           global UpSer
-          cmd = "8"
+          cmd = "8\r"
           UpSer.write(cmd)
 
-        def tuneUpBtn_clicked(self):
+	def cipCommRestartBtn_clicked(self):
           global UpSer
-          cmd = "9"
+          cmd = "9\r"
           UpSer.write(cmd)
 
-        def tuneDnBtn_clicked(self):
+	def txServerRestartBtn_clicked(self):
           global UpSer
-          cmd = "10"
+          cmd = "10\r"
           UpSer.write(cmd)
+
+	def antennaModeBtn_clicked(self):
+          global UpSer
+          cmd = "11\r"
+          UpSer.write(cmd)
+
+	def radioBtn_clicked(self):
+          global UpSer
+          cmd = "12\r"
+          UpSer.write(cmd)
+
+	def tuneDnBtn_clicked(self):
+          global UpSer
+          cmd = "13\r"
+          UpSer.write(cmd)
+
+	def tuneUpBtn_clicked(self):
+          global UpSer
+          cmd = "14\r"
+          UpSer.write(cmd)
+
+	def nextModeBtn_clicked(self):
+          global UpSer
+          cmd = "15\r"
+          UpSer.write(cmd)
+
+
+
 
         def paintEvent(self, event):
           global heading
