@@ -12,6 +12,7 @@ extern int InitSynth(char *);
 extern int SetFreq(char *);
 extern int GetUDP(void);
 extern int Point(char *);
+extern int Echo(char *);
 extern int Quit();
 extern int Help(char *);
 
@@ -36,6 +37,7 @@ COMMAND commands [ ] = {
         {"quit", &Quit, "Quit server"},
         {"q", &Quit, "Synonym for Quit"},
 	{"help", &Help, "Print list of commands or help on specified one"},
+	{"echo", &Echo, "Echoes input to Tx log"},
 	{"?", &Help, "Synonym for help"},
 	{(char *)NULL, NULL, (char *)NULL}
 };

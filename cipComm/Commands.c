@@ -21,12 +21,13 @@ int TranslateCIP(int command)
   int mode = 0;
   int toggle = 0;
   float freq;
+  int temp_var;
   char server_command[MAXARGSIZE];
 
   //Lower Byte == Power/RF Switch
   if( command & 0xFF ){
     //find current power state before you set one
-    CIP = SendCommand("setpower\n", 4);
+    CIP = SendCommand("setpower\n", 4); //position (4) is current state
 
     if     (  (CIP & command) == 0)
       toggle = 1;  //turn ON
@@ -61,7 +62,7 @@ int TranslateCIP(int command)
     }
 
     CIP = CIP ^ command;
-    int ret = SendCommand(server_command, 12); 
+    int ret = SendCommand(server_command, 12); //pos'n 12 is New state
 
     if(CIP != ret)
       printf("something went wrong!\n");
@@ -74,41 +75,72 @@ int TranslateCIP(int command)
   else if( command & 0xFF00 ){
 
     switch(command){
+      case 0x100 :  //reboot computer
+        system("echo receved 0x100 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+	system("/sbin/reboot");
+        break;
 
-      case 0x1000 :  //toggle radio
-        toggle = SendCommand("radio\n", 4);
-        toggle ^= 1;
-        sprintf(server_command, "radio %d\n", toggle);
+      case 0x200 :  //restart cipComm
+        system("echo receved 0x200 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+	system("nohup pkill cipComm && nohup /home/ubuntu/ONR/cipComm/cipComm > /dev/null 2>&1 &");
         break;
-      case 0x2000 :  //tune VCO down
-        freq = SendCommand_F("setfreq\n", 4);
-        sprintf(server_command, "setfreq %f\n", freq - .005);
-        break;
-      case 0x4000 :  //tune VCO up
-        freq = SendCommand_F("setfreq\n", 4);
-        sprintf(server_command, "setfreq %f\n", freq + .005);
-        break;
-      case 0x8000 :  //change pointing mode (Lighthouse, GS1, GS2)
-        mode = SendCommand("point\n", 4);
-        if(mode>=4) mode=-1;
-        sprintf(server_command, "point %d\n", mode + 1);
+
+      case 0x400 :  //kill & restart txServer
+        system("echo receved 0x400 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+	system("nohup pkill txServer && nohup /home/ubuntu/ONR/txServer/txServer > /dev/null 2>&1 &");
         break;
 
       case 0x800 :  //change antenna select mode (Cycle, Ant1, Ant2, Ant3)
-        //  HOW DO WE DO THIS??
-        break;
-      case 0x400 :  //kill & restart txServer
-	//system("nohup pkill txServer && nohup /home/ubuntu/ONR/txServer/txServer > /dev/null 2>&1 &");
-        break;
-      case 0x200 :  //restart cipComm
-	//system("nohup pkill cipComm && nohup /home/ubuntu/ONR/cipComm/cipComm > /dev/null 2>&1 &");
-        break;
-      case 0x100 :  //reboot computer
-	system("/sbin/reboot");
-        break;
-    }
+        //  HOW DO WE DO THIS?? - get MSB & LSB setpower state for RF switches, cycle to next state
+        system("echo receved 0x800 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+        CIP = SendCommand("setpower\n", 4); //position (4) is current state
+        
+        int currentState = ((CIP >> 4) & 0x01) << 1 | ((CIP >> 5) & 0x01);
+        printf("current antenna is %d\n", currentState);
+        printf("changing antenna to  %d\n", currentState+1);
 
-    SendCommand(server_command, 4);
+        int newState = (currentState + 1) & 0x03;
+        int newMSB = (newState>>1) & 0x1;
+        int newLSB = newState & 0x1;
+
+        sprintf(server_command, "setpower msb %d\n", newMSB);
+        SendCommand(server_command, 12); //pos'n 12 is New state
+        sprintf(server_command, "setpower lsb %d\n", newLSB);
+        SendCommand(server_command, 12); //pos'n 12 is New state
+
+        break;
+
+      case 0x1000 :  //toggle radio
+        system("echo receved 0x1000 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+        toggle = SendCommand("radio\n", 4);					//get current radio state
+        toggle ^= 1;
+        sprintf(server_command, "radio %d\n", toggle);
+        SendCommand(server_command, 4);
+        break;
+
+      case 0x2000 :  //tune VCO down
+        system("echo receved 0x2000 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+        freq = SendCommand_F("setfreq\n", 4);					//get current freuqneyc
+        sprintf(server_command, "setfreq %f\n", freq - .005);
+        SendCommand(server_command, 4);
+        break;
+
+      case 0x4000 :  //tune VCO up
+        system("echo receved 0x4000 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+        freq = SendCommand_F("setfreq\n", 4);					//get current frequency
+        sprintf(server_command, "setfreq %f\n", freq + .005);
+        SendCommand(server_command, 4);
+        break;
+
+      case 0x8000 :  //change pointing mode (Lighthouse, GS1, GS2)
+        system("echo receved 0x8000 >> /home/ubuntu/ONR/cipComm/Comm.log");	//log
+        mode = SendCommand("point\n", 4);					//get current pointing mode
+        if(mode>=4) mode=-1;
+        sprintf(server_command, "point %d\n", mode + 1);
+        SendCommand(server_command, 4);
+        break;
+
+    }
 
     return 0;  
 

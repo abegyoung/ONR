@@ -387,3 +387,11 @@ int Quit()
 }
 
 
+int Echo(char *args)
+{
+  char arg1[MAXARGSIZE];
+  args=one_argument(args,arg1);
+  TELLUSER ("%s\n", arg1);
+  printf("%s\n", arg1);
+  return (0);
+}
