@@ -156,6 +156,19 @@
      </rect>
     </property>
    </widget>
+   <widget class="QPushButton" name="antennaMode">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>100</y>
+      <width>51</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ChgAnt</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="tuneUpBtn">
     <property name="geometry">
      <rect>
